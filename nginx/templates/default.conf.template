@@ -1,0 +1,32 @@
+# Default Server Configuration
+# Simple server block with basic functionality
+
+# HTTP server (redirect to HTTPS in production)
+server {
+  listen 8080 default_server;
+  listen [::]:8080 default_server;
+  server_name _;
+  
+  # Security headers for HTTP
+  add_header X-Frame-Options "DENY" always;
+  add_header X-Content-Type-Options "nosniff" always;
+  
+  # Health check endpoint (allows HTTP for load balancers)
+  location = /health {
+    access_log off;
+    return 200 "healthy\n";
+    add_header Content-Type text/plain;
+  }
+  
+  # Let's Encrypt challenge support
+  location ^~ /.well-known/acme-challenge/ {
+    default_type "text/plain";
+    root /var/www/html;
+    allow all;
+  }
+  
+  # Redirect all other HTTP traffic to HTTPS (uncomment in production)
+  location / {
+    return 301 https://$host$request_uri;
+  }
+}
